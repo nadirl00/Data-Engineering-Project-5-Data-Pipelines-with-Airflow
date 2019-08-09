@@ -1,13 +1,22 @@
 from datetime import datetime, timedelta
 import os
 from airflow import DAG
+
+from airflow.contrib.hooks.aws_hook import AwsHook
+from airflow.hooks.postgres_hook import PostgresHook
 from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators import (StageToRedshiftOperator, LoadFactOperator,
-                                LoadDimensionOperator, DataQualityOperator)
+from airflow.operators import (StageToRedshiftOperator, 
+                               LoadFactOperator,
+                               LoadDimensionOperator, 
+                               DataQualityOperator, 
+                               PythonOperator,
+                               PostgresOperator)
 from helpers import SqlQueries
+import create_tables
 
 # AWS_KEY = os.environ.get('AWS_KEY')
 # AWS_SECRET = os.environ.get('AWS_SECRET')
+
 
 default_args = {
     'owner': 'udacity',
@@ -20,7 +29,15 @@ dag = DAG('udac_example_dag',
           schedule_interval='0 * * * *'
         )
 
-start_operator = DummyOperator(task_id='Begin_execution',  dag=dag)
+#start_operator = DummyOperator(task_id='Begin_execution',  dag=dag)
+
+start_operator = PostgresOperator(
+    task_id='Begin_execution',  
+    dag=dag,
+    postgres_conn_id="redshift",
+    sql=create_tables.CREATE_TABLES_SQL
+)
+
 
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id='Stage_events',
@@ -63,3 +80,7 @@ run_quality_checks = DataQualityOperator(
 )
 
 end_operator = DummyOperator(task_id='Stop_execution',  dag=dag)
+
+
+start_operator >> stage_events_to_redshift
+start_operator >> stage_songs_to_redshift
