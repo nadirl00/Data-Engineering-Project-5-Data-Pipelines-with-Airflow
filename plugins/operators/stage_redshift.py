@@ -44,7 +44,7 @@ class StageToRedshiftOperator(BaseOperator):
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
 
         self.log.info("Clearing data from destination Redshift table")
-        #redshift.run("DELETE FROM {}".format(self.table))
+        redshift.run("DELETE FROM {}".format(self.table))
         self.log.info("DELETE FROM {}".format(self.table))
         
         self.log.info("Copying data from S3 to Redshift")
