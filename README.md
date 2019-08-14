@@ -12,6 +12,18 @@ The source data resides in S3 and needs to be processed in Sparkify's data wareh
 The ETL pipeline has the following structure:
 ![](Images/example-dag.png)
 
+The **begin_execution** tasks simply creates the DWH tables if they do not exist.
+
+The **Stage_events** and **Stage_songs** tables load data from S3 to Redshift. They both use the same **Stage Operator** with different parameters.
+
+The **Load_songplays_fact_table** loads data from the staging tables to the fact table using the **Fact Operator**.
+
+The **Load_x_dim_table** loads data to the 4 dimension (artists, users, songs, time) tables. It uses the same **Dim Operator** with different parameters to load the data.
+
+The **Run_data_quality_checks** uses the **Data Quality Operator** to check the data at the end of the ETL.
+
+The **Stop_execution** operator does not perform any task and simply ends the DAG execution.
+
 ## Operator details :
 
 ### Stage Operator
@@ -28,7 +40,7 @@ The parameters are:
 The operator is in the file **plugins/operators/stage_redshift.py**
 
 ### Fact Operator:
-With dimension and fact operators, you can utilize the provided SQL helper class to run data transformations. Most of the logic is within the SQL transformations and the operator is expected to take as input a SQL statement and target database on which to run the query against. You can also define a target table that will contain the results of the transformation.
+This operator runs an SQL query to load data fromt he staging table to the songfact table. It uses the following parameters:
 
 - `redshift_conn_id` : contains the connection details to the data warehouse in Amazon Redshift (from in Airflow)
 - `sql_statement` : contains the SQL statement to insert into the fact table.
@@ -37,7 +49,7 @@ The operator is in the file **plugins/operators/load_fact.py**
 
 ### Dimension Operators
 
-Dimension loads are often done with the truncate-insert pattern where the target table is emptied before the load. Thus, you could also have a parameter that allows switching between insert modes when loading dimensions. Fact tables are usually so massive that they should only allow append type functionality.
+This operator loads data from the staging tables to the dimension tables. It requires the following parameters:
 
 - `redshift_conn_id` : contains the connection details to the data warehouse in Amazon Redshift (from in Airflow)
 - `table` : the name of the destination dimension table
