@@ -7,6 +7,11 @@ The aim of this project is to create high grade data pipelines that are dynamic 
 
 The source data resides in S3 and needs to be processed in Sparkify's data warehouse in Amazon Redshift. The source datasets consist of JSON logs that tell about user activity in the application and JSON metadata about the songs the users listen to.
 
+## Implemented DAG:
+
+The ETL pipeline has the following structure:
+![](Images/example-dag.png)
+
 ## Operator details :
 
 ### Stage Operator
@@ -42,15 +47,18 @@ Dimension loads are often done with the truncate-insert pattern where the target
 The operator is in the file **plugins/operators/load_dimension.py**
 
 ### Data Quality Operator
-The final operator to create is the data quality operator, which is used to run checks on the data itself. The operator's main functionality is to receive one or more SQL based test cases along with the expected results and execute the tests. For each the test, the test result and expected result needs to be checked and if there is no match, the operator should raise an exception and the task should retry and fail eventually.
+The final operator is used to run checks on the data itself. The operator's main functionality is to receive one or more SQL based test cases along with the expected results and execute the tests. For each the test, the test result and expected result needs to be checked and if there is no match, the operator should raise an exception and the task should retry and fail eventually.
 
-For example one test could be a SQL statement that checks if certain column contains NULL values by counting all the rows that have NULL in the column. We do not want to have any NULLs so expected result would be 0 and the test would compare the SQL statement's outcome to the expected result.
+- `redshift_conn_id` : contains the connection details to the data warehouse in Amazon Redshift (from in Airflow)
+- `retries` : number of retries before raising an exception
+- `tables` : a dictionary containg table names as keys and a list of tests to run on these tables as values associated to the keys.
+             The dictionary is structured is as follows:
+             **Keys**: table names
+             **Values**: List containing one list and one dictionary:
+                        - The list contains the column names that are not null
+                        - A dictionary containing key value pairs of queries and expected return values.
 
-## Implemented DAG:
-
-The ETL pipeline has the following structure:
-![](Images/example-dag.png)
-
+The operator is in the file **plugins/operators/data_quality.py**
 
 ## Requirements:
 
