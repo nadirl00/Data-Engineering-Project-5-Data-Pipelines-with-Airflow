@@ -51,16 +51,22 @@ The final operator is used to run checks on the data itself. The operator's main
 
 - `redshift_conn_id` : contains the connection details to the data warehouse in Amazon Redshift (from in Airflow)
 - `retries` : number of retries before raising an exception
-- `tables` : a dictionary containg table names as keys and a list of tests to run on these tables as values associated to the keys.
-             The dictionary is structured is as follows:
-             **Keys**: table names
-             **Values**: List containing one list and one dictionary:
-                        - The list contains the column names that are not null
-                        - A dictionary containing key value pairs of queries and expected return values.
+- `tables` : a dictionary containg table names as keys and a list of tests to run on these tables as values associated to the keys. The dictionary is structured is as follows:             
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Keys**: table names
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Values**: A list containing one list and one dictionary:
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- The list contains the column names with a not null constraint to be tested
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- A dictionary containing key value pairs of queries and expected return values for additional data quality testing.
+                        
 
 The operator is in the file **plugins/operators/data_quality.py**
 
 ## Requirements:
+
+Apache Version : 1.10.2
+A running Amazon Redshift cluster
 
 ## Airflow configuration
 
@@ -111,6 +117,16 @@ Once you've entered these values, select **Save**.
 
 ![](Images/connection-redshift.png)
 
+
+
+## How to use the program:
+
+Once the files have been uploaded to the udacity workspace, from Bash, run the following shell script to start Airflow:
+`/opt/airflow/start.sh`
+
+Once the message `Airflow web server is ready` appears, click on the `Access Airflow` button to open the UI and click on the **Off** button to start the pipeline
+
+![](Images/Start-DAG.png)
 
 
 
