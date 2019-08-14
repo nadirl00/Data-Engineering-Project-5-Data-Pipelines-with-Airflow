@@ -63,7 +63,7 @@ stage_songs_to_redshift = StageToRedshiftOperator(
     redshift_conn_id="redshift",
     aws_credentials_id= "aws_credentials",
     s3_bucket="udacity-dend",
-    s3_key="song_data/A/A/A",
+    s3_key="song_data",
     region="us-west-2",
     json="auto"
     
@@ -83,7 +83,7 @@ load_user_dimension_table = LoadDimensionOperator(
     redshift_conn_id="redshift",
     table = "public.users",
     stl_statement = SqlQueries.user_table_insert
-    
+    #append vs insert-detlete operator
 )
 
 load_song_dimension_table = LoadDimensionOperator(
@@ -112,7 +112,9 @@ load_time_dimension_table = LoadDimensionOperator(
 
 run_quality_checks = DataQualityOperator(
     task_id='Run_data_quality_checks',
-    dag=dag
+    dag=dag,
+    tables = {"public.artists":[["artistid"],{"SELECT COUNT(*) FROM public.artists": 10025}], "public.songplays":[["playid","start_time","userid"],{}],"public.songs":[["songid"],{"SELECT COUNT(*) FROM public.songs": 14896}],"public.staging_events":[[],[]],"public.staging_songs":[[],[]],"public.\"time\"":[["start_time"],[]],"public.users":[["userid"],{"SELECT COUNT(*) FROM public.users": 104}]},
+    redshift_conn_id = "redshift"
 )
 
 end_operator = DummyOperator(task_id='Stop_execution',  dag=dag)
@@ -135,3 +137,4 @@ load_artist_dimension_table >> run_quality_checks
 load_time_dimension_table >> run_quality_checks
 
 run_quality_checks >> end_operator
+
